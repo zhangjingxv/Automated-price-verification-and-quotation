@@ -1,1 +1,17 @@
 node_modules
+dist
+.env
+.DS_Store
+coverage
+*.log
+*.local
+*.sqlite
+*.db
+/.turbo
+/.vercel
+/.next
+
+# Prisma
+prisma/seed.js
+prisma/seed.js.map
+

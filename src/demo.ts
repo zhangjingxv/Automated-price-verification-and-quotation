@@ -113,7 +113,7 @@ app.post('/api/parse', (req, res) => {
       });
     }
 
-    const items = rawText.split(/[\s,，;；]+/).map(item => ({
+    const items = rawText.split(/[\s,，;；]+/).map((item: string) => ({
       raw: item.trim(),
       category: 'Unknown',
       qty: 1,

@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  sku          String   @unique
+  name         String?
+  baseCurrency String   @default("USD")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  supplierQuotes SupplierQuote[]
+  costOverrides  CostOverride[]
+}
+
+model SupplierQuote {
+  id            String   @id @default(cuid())
+  productId     String
+  supplier      String
+  region        String?
+  currency      String
+  minQty        Int      @default(1)
+  maxQty        Int?
+  unitPrice     Decimal  @db.Decimal(12, 4)
+  leadTimeDays  Int?
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  createdAt     DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([productId, supplier, region, effectiveFrom])
+}
+
+model ExchangeRate {
+  id    String   @id @default(cuid())
+  base  String
+  quote String
+  rate  Decimal  @db.Decimal(18, 8)
+  date  DateTime
+
+  @@unique([base, quote, date], name: "base_quote_date")
+}
+
+model CostOverride {
+  id            String   @id @default(cuid())
+  productId     String
+  customer      String?
+  region        String?
+  currency      String
+  unitPrice     Decimal  @db.Decimal(12, 4)
+  reason        String?
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  createdAt     DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([productId, customer, region, effectiveFrom])
+}
+
+
