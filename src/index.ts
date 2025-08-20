@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
@@ -26,11 +27,13 @@ app.get('/health', (_req, res) => {
 })
 app.get('/health/deep', deepHealth)
 
-// Swagger
+// Swagger (try dist first, then src fallback)
 try {
-  const swaggerPath = path.join(__dirname, 'openapi.json')
-  if (fs.existsSync(swaggerPath)) {
-    const spec = JSON.parse(fs.readFileSync(swaggerPath, 'utf-8'))
+  const distSpec = path.join(__dirname, 'openapi.json')
+  const srcSpec = path.join(process.cwd(), 'src', 'openapi.json')
+  const specPath = fs.existsSync(distSpec) ? distSpec : (fs.existsSync(srcSpec) ? srcSpec : null)
+  if (specPath) {
+    const spec = JSON.parse(fs.readFileSync(specPath, 'utf-8'))
     app.use('/docs', swaggerUi.serve, swaggerUi.setup(spec))
   }
 } catch {}
