@@ -72,6 +72,7 @@ npm run db:studio
 - `DATABASE_URL`: Prisma 数据库连接串
 - `DEFAULT_CURRENCY`: 默认币种（如 `USD`）
 - `LOG_LEVEL`: 日志级别（如 `info`）
+- `CACHE_TTL_MS`: 缓存 TTL（毫秒），用于产品/成本/汇率查询
 
 可从 `env.example` 拷贝生成 `.env` 后补充实际值。
 
