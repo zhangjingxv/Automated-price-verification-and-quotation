@@ -4,11 +4,12 @@ import cors from 'cors'
 import helmet from 'helmet'
 import { requestContext } from './middleware/requestContext'
 import { errorHandler } from './middleware/errorHandler'
-import { createQuote } from './controllers/quoteController'
+import { createQuote, createQuotesBatch } from './controllers/quoteController'
 import { config } from './utils/config'
 import rateLimit from 'express-rate-limit'
 import { requestLogger } from './middleware/requestLogger'
 import { deepHealth } from './controllers/healthController'
+import { registry } from './utils/metrics'
 import swaggerUi from 'swagger-ui-express'
 import fs from 'fs'
 import path from 'path'
@@ -22,10 +23,15 @@ app.use(requestContext)
 app.use(requestLogger)
 
 app.post('/api/quotes', createQuote)
+app.post('/api/quotes:batch', createQuotesBatch)
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 app.get('/health/deep', deepHealth)
+app.get('/metrics', async (_req, res) => {
+  res.set('Content-Type', registry.contentType)
+  res.send(await registry.metrics())
+})
 
 // Swagger (try dist first, then src fallback)
 try {
