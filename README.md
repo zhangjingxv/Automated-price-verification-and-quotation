@@ -73,6 +73,7 @@ npm run db:studio
 - `DEFAULT_CURRENCY`: 默认币种（如 `USD`）
 - `LOG_LEVEL`: 日志级别（如 `info`）
 - `CACHE_TTL_MS`: 缓存 TTL（毫秒），用于产品/成本/汇率查询
+- `CORS_ORIGIN`: 允许的跨域来源（逗号分隔），如 `http://localhost:3000`
 
 可从 `env.example` 拷贝生成 `.env` 后补充实际值。
 
@@ -237,6 +238,7 @@ npm run dev
 - 无法连接数据库：确认 `docker compose up -d db` 已启动，`.env` 的 `DATABASE_URL` 正确。
 - 迁移失败：检查 `prisma/schema.prisma` 与现有数据；必要时清理本地卷重试。
 - 接口无响应：确认服务监听 3000 端口；检查防火墙与端口占用。
+- CI 失败：检查 Node 版本、是否执行 `prisma generate`、以及缺失的环境变量。
 
 ---
 
