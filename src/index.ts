@@ -8,6 +8,9 @@ import { config } from './utils/config'
 import rateLimit from 'express-rate-limit'
 import { requestLogger } from './middleware/requestLogger'
 import { deepHealth } from './controllers/healthController'
+import swaggerUi from 'swagger-ui-express'
+import fs from 'fs'
+import path from 'path'
 
 const app = express()
 app.use(helmet())
@@ -22,6 +25,15 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 app.get('/health/deep', deepHealth)
+
+// Swagger
+try {
+  const swaggerPath = path.join(__dirname, 'openapi.json')
+  if (fs.existsSync(swaggerPath)) {
+    const spec = JSON.parse(fs.readFileSync(swaggerPath, 'utf-8'))
+    app.use('/docs', swaggerUi.serve, swaggerUi.setup(spec))
+  }
+} catch {}
 
 app.use(errorHandler)
 

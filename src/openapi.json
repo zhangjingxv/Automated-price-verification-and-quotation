@@ -1,0 +1,44 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Quotation API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/quotes": {
+      "post": {
+        "summary": "Create quote",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sku": { "type": "string" },
+                  "quantity": { "type": "integer" },
+                  "region": { "type": "string" },
+                  "customer": { "type": "string" },
+                  "targetCurrency": { "type": "string" },
+                  "at": { "type": "string", "format": "date-time" }
+                },
+                "required": ["sku", "quantity"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Quote created" }
+        }
+      }
+    }
+  }
+}
+
+

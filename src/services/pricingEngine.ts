@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client'
 import { CostOverrideRepository, ExchangeRateRepository, ProductRepository, SupplierQuoteRepository } from './repositories'
 import { CostBreakdown, QuoteInput, QuoteResult, RuleAdjustment } from '../types'
+import { RuleEngine } from './ruleEngine'
 
 const productRepo = new ProductRepository()
 const quoteRepo = new SupplierQuoteRepository()
@@ -57,8 +58,17 @@ export class PricingEngine {
       currency = targetCurrency
     }
 
-    // TODO: integrate ruleEngine for discounts/surcharges
-    const ruleAdjustments: RuleAdjustment[] = []
+    const ruleEngine = new RuleEngine()
+    const ruleResult = ruleEngine.apply({
+      sku: input.sku,
+      quantity: input.quantity,
+      region: input.region,
+      customer: input.customer,
+      currency,
+      baseSubtotal: subtotal,
+    })
+    const ruleAdjustments: RuleAdjustment[] = ruleResult.adjustments
+    subtotal = ruleResult.subtotal
 
     const unitPrice = subtotal.div(input.quantity)
     const totalPrice = subtotal
