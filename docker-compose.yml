@@ -17,6 +17,20 @@ services:
       timeout: 5s
       retries: 5
 
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/quote_db?schema=public
+      - PORT=3000
+      - LOG_LEVEL=info
+      - DEFAULT_CURRENCY=USD
+      - CACHE_TTL_MS=30000
+    ports:
+      - "3000:3000"
+
 volumes:
   db_data:
     driver: local
