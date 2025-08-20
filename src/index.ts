@@ -13,17 +13,19 @@ import { registry } from './utils/metrics'
 import swaggerUi from 'swagger-ui-express'
 import fs from 'fs'
 import path from 'path'
+import compression from 'compression'
 
 const app = express()
 app.use(helmet())
 app.use(cors({ origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : true }))
-app.use(express.json())
-app.use(rateLimit({ windowMs: 60_000, max: 120 }))
+app.use(compression())
+app.use(express.json({ limit: process.env.MAX_BODY_SIZE || '1mb' }))
+app.use(rateLimit({ windowMs: 60_000, max: 120, skip: (req) => req.path === '/metrics' }))
 app.use(requestContext)
 app.use(requestLogger)
 
 app.post('/api/quotes', createQuote)
-app.post('/api/quotes:batch', createQuotesBatch)
+app.post('/api/quotes/batch', createQuotesBatch)
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
@@ -47,9 +49,15 @@ try {
 app.use(errorHandler)
 
 const port = config.PORT
-app.listen(port, () => {
+const server = app.listen(port, () => {
   // eslint-disable-next-line no-console
   console.log(`Server listening on http://localhost:${port}`)
 })
+
+const shutdown = () => {
+  server.close(() => process.exit(0))
+}
+process.on('SIGINT', shutdown)
+process.on('SIGTERM', shutdown)
 
 

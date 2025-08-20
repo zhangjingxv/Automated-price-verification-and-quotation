@@ -38,6 +38,28 @@
         }
       }
     }
+    ,
+    "/api/quotes/batch": {
+      "post": {
+        "summary": "Create quotes in batch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/paths/~1api~1quotes/post/requestBody/content/application~1json/schema"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Batch quotes created" }
+        }
+      }
+    }
   }
 }
 
