@@ -12,6 +12,9 @@ app.use(express.json())
 app.use(requestContext)
 
 app.post('/api/quotes', createQuote)
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() })
+})
 
 app.use(errorHandler)
 

@@ -30,6 +30,9 @@ COPY --from=builder /app/dist ./dist
 
 EXPOSE 3000
 
+# Container healthcheck
+HEALTHCHECK --interval=10s --timeout=3s --retries=3 CMD wget -qO- http://localhost:3000/health || exit 1
+
 # Run migrations then start
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
 

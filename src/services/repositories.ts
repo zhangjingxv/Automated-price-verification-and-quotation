@@ -1,13 +1,21 @@
 import { Prisma } from '@prisma/client'
 import { prisma } from './dbClient'
+import { TtlCache } from '../utils/cache'
 
 export class ProductRepository {
+  private cache = new TtlCache<any>(Number(process.env.CACHE_TTL_MS || 30000))
   async findBySku(sku: string) {
-    return prisma.product.findUnique({ where: { sku } })
+    const key = `product:${sku}`
+    const cached = this.cache.get(key)
+    if (cached) return cached
+    const data = await prisma.product.findUnique({ where: { sku } })
+    if (data) this.cache.set(key, data)
+    return data
   }
 }
 
 export class SupplierQuoteRepository {
+  private cache = new TtlCache<any>(Number(process.env.CACHE_TTL_MS || 30000))
   async findBestQuote(params: {
     productId: string
     region?: string
@@ -16,6 +24,9 @@ export class SupplierQuoteRepository {
   }) {
     const { productId, region, quantity, at } = params
 
+    const cacheKey = `supplierQuote:${productId}:${region || 'ALL'}:${quantity}:${at.toISOString()}`
+    const cached = this.cache.get(cacheKey)
+    if (cached) return cached
     const quotes = await prisma.supplierQuote.findMany({
       where: {
         productId,
@@ -28,22 +39,29 @@ export class SupplierQuoteRepository {
       orderBy: [{ unitPrice: 'asc' }],
       take: 1,
     })
-    return quotes[0] ?? null
+    const best = quotes[0] ?? null
+    if (best) this.cache.set(cacheKey, best)
+    return best
   }
 }
 
 export class ExchangeRateRepository {
+  private cache = new TtlCache<any>(Number(process.env.CACHE_TTL_MS || 30000))
   async findRate(base: string, quote: string, at: Date) {
-    // pick the closest rate <= date
+    const cacheKey = `rate:${base}:${quote}:${at.toISOString().slice(0,10)}`
+    const cached = this.cache.get(cacheKey)
+    if (cached) return cached
     const rate = await prisma.exchangeRate.findFirst({
       where: { base, quote, date: { lte: at } },
       orderBy: { date: 'desc' },
     })
+    if (rate) this.cache.set(cacheKey, rate)
     return rate
   }
 }
 
 export class CostOverrideRepository {
+  private cache = new TtlCache<any>(Number(process.env.CACHE_TTL_MS || 30000))
   async findApplicable(params: {
     productId: string
     customer?: string
@@ -51,6 +69,9 @@ export class CostOverrideRepository {
     at: Date
   }) {
     const { productId, customer, region, at } = params
+    const cacheKey = `override:${productId}:${customer || 'ALL'}:${region || 'ALL'}:${at.toISOString()}`
+    const cached = this.cache.get(cacheKey)
+    if (cached) return cached
     const overrides = await prisma.costOverride.findMany({
       where: {
         productId,
@@ -62,7 +83,9 @@ export class CostOverrideRepository {
       orderBy: [{ effectiveFrom: 'desc' }],
       take: 1,
     })
-    return overrides[0] ?? null
+    const best = overrides[0] ?? null
+    if (best) this.cache.set(cacheKey, best)
+    return best
   }
 }
 
